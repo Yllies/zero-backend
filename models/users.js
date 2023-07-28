@@ -1,10 +1,17 @@
 const mongoose = require("mongoose");
 
 const usersSchema = mongoose.Schema({
-  nickname: String,
+  email: String,
+  password: String,
   name: String,
-  latitude: Number,
-  longitude: Number,
+  address: String,
+  siren: Number,
+  type: String,
+  description: String,
+  phone_number: Number,
+  url_site: String,
+  logo: String,
+  token: String,
 });
 
 const User = mongoose.model("users", usersSchema);
