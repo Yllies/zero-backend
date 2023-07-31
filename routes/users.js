@@ -8,13 +8,14 @@ const bcrypt = require('bcrypt');
 const uid2 = require('uid2');
 
 router.post('/signup', (req, res) => {
-  if (!checkBody(req.body, ['email', 'password', 'type','name','siret_siren','adresse'])) {
+  if (!checkBody(req.body, ['email', 'password','type','name','siret_siren','address'])) {
     res.json({ result: false, error: 'Missing or empty fields' });
     return;
   }
 
   // Check if the user has not already been registered
-  User.findOne({ username: { $regex: new RegExp(req.body.siret_siren, 'i') } }).then(data => {
+  //on check via leur siret/siret
+  User.findOne({siret_siren: req.body.siret_siren}).then(data => {
     if (data === null) {
       const hash = bcrypt.hashSync(req.body.password, 10);
 //pour les données qu'on a pas demandé lors de l'inscription, je les enregistre par defaut en null
@@ -48,10 +49,10 @@ router.post('/signin', (req, res) => {
     res.json({ result: false, error: 'Missing or empty fields' });
     return;
   }
-//On garde le name pour un potentiel message de bienvenue ;)
-  User.findOne({ username: { $regex: new RegExp(req.body.email, 'i') } }).then(data => {
+//le find one se fait par rapport au mail
+  User.findOne({ email: { $regex: new RegExp(req.body.email, 'i') } }).then(data => {
     if (bcrypt.compareSync(req.body.password, data.password)) {
-      res.json({ result: true, token: data.token, email: data.email, name: data.name });
+      res.json({ result: true, token: data.token, email: data.email,});
     } else {
       res.json({ result: false, error: 'User not found or wrong password' });
     }
