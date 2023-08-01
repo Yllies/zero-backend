@@ -105,7 +105,7 @@ router.put("/association/update/:token/:idPost", (req, res)=>{
 
 // Delete post by the company
 router.delete("/company/delete/:token/:idPost", (req, res) => {
-    const { idPost } = req.params;
+    const { idPost } = req.params
 
     PostCompany.findOne({idPost}).populate("author").then(data=>{
         if(data){
