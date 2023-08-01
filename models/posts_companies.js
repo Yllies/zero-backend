@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
 const postsCompaniesSchema = mongoose.Schema({
+  idPost: String,
   title: String,
   description: String,
   category: String,
