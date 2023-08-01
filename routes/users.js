@@ -8,7 +8,7 @@ const bcrypt = require('bcrypt');
 const uid2 = require('uid2');
 
 router.post('/signup', (req, res) => {
-  if (!checkBody(req.body, ['email', 'password','type','name','siret_siren','address'])) {
+  if (!checkBody(req.body, ['email','username', 'password','type','name','siret_siren','address'])) {
     res.json({ result: false, error: 'Missing or empty fields' });
     return;
   }
@@ -49,10 +49,10 @@ router.post('/signin', (req, res) => {
     res.json({ result: false, error: 'Missing or empty fields' });
     return;
   }
-//le find one se fait par rapport au mail
+//le find on le fait par rapport au mail
   User.findOne({ email: { $regex: new RegExp(req.body.email, 'i') } }).then(data => {
     if (bcrypt.compareSync(req.body.password, data.password)) {
-      res.json({ result: true, token: data.token, email: data.email,});
+      res.json({ result: true, token: data.token, email: data.email, name: data.name});
     } else {
       res.json({ result: false, error: 'User not found or wrong password' });
     }
