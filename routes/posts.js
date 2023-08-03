@@ -18,6 +18,15 @@ router.get("/company", (req, res) => {
     }
   });
 });
+router.get("/charity", (req, res) => {
+  PostAssociation.find().then((data) => {
+    if (data) {
+      res.json({ posts: data });
+    } else {
+      res.json({ error: "Unknown error!" });
+    }
+  });
+});
 
 // Publish post by the company
 router.post("/company/publish/:token", (req, res) => {
