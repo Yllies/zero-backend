@@ -1,11 +1,10 @@
 const mongoose = require("mongoose");
 
 const postsCompaniesSchema = mongoose.Schema({
-  idPost: String,
   title: String,
+  photo: String,
   description: String,
   category: String,
-  photo: String,
   quantity: Number,
   availability_date: Date,
   author: { type: mongoose.Schema.Types.ObjectId, ref: "users" },
