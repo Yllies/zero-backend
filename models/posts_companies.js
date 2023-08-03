@@ -15,7 +15,7 @@ const postsCompaniesSchema = mongoose.Schema({
     ref: "users",
     default: null,
   },
-  isBooked: Boolean,
+  isBooked: String,
 });
 
 const PostCompany = mongoose.model("posts_companies", postsCompaniesSchema);
