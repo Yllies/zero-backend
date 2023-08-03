@@ -8,7 +8,7 @@ const bcrypt = require('bcrypt');
 const uid2 = require('uid2');
 
 router.post('/signup', (req, res) => {
-  if (!checkBody(req.body, ['email','username','password','type','name','siret_siren','address'])) {
+  if (!checkBody(req.body, ['email','username','password','type','name','siret_siren','address','longitude',"latitude","latitudeDelta","longitudeDelta"])) {
     res.json({ result: false, error: 'Missing or empty fields' });
     return;
   }
@@ -32,6 +32,10 @@ router.post('/signup', (req, res) => {
         phone_number: null,
         url_site: null,
         logo: null,
+        longitude: req.body.longitude,
+        latitude:req.body.latitude,
+        longitudeDelta: req.body.longitudeDelta,
+        latitudeDelta:req.body.latitudeDelta,
         token: uid2(32),
       });
       
