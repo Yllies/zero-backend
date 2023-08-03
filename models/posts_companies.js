@@ -10,6 +10,12 @@ const postsCompaniesSchema = mongoose.Schema({
   availability_date: Date,
   author: { type: mongoose.Schema.Types.ObjectId, ref: "users" },
   creation_date: Date,
+  isBookedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "users",
+    default: null,
+  },
+  isBooked: Boolean,
 });
 
 const PostCompany = mongoose.model("posts_companies", postsCompaniesSchema);

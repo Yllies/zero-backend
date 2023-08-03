@@ -50,6 +50,7 @@ router.post("/company/publish/:token", (req, res) => {
           quantity,
           availability_date,
           creation_date: new Date(),
+          isBooked: false,
         });
         newPostCompany.save().then((newDoc) => {
           res.json({ result: true, data: newDoc });
