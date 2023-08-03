@@ -14,28 +14,30 @@ router.post("/company/publish/:token", (req, res) => {
     const {title, description, category, photo, quantity, availability_date} = req.body
 if(!checkBody(req.body, ["title", "description", "category", "photo", "quantity", "availability_date" ])){
 res.json({result: false, error: 'Missing or empty fields'})
+}else{
+
+    User.findOne({token}).then(data=>{
+      
+        if(data){
+            const newPostCompany = new PostCompany({
+                idPost: uniqid(),// Generating random uniq id to be more secure.
+                //                 We want to transit the uniq id in the URL, 
+                //                  and we never do that with the id generating by mongoose
+                title,
+                description,
+                category,
+                photo,
+                quantity,
+                availability_date,
+                author: data,
+                creation_date: new Date()
+            })
+            newPostCompany.save().then(newDoc=>{
+                res.json({result: true, data: newDoc})
+            })
+        }
+    })
 }
-User.findOne({token}).then(data=>{
-  
-    if(data){
-        const newPostCompany = new PostCompany({
-            idPost: uniqid(),// Generating random uniq id to be more secure.
-            //                 We want to transit the uniq id in the URL, 
-            //                  and we never do that with the id generating by mongoose
-            title,
-            description,
-            category,
-            photo,
-            quantity,
-            availability_date,
-            author: data,
-            creation_date: new Date()
-        })
-        newPostCompany.save().then(newDoc=>{
-            res.json({result: true, data: newDoc})
-        })
-    }
-})
 });
 
 // Publish post by the association
