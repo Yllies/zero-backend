@@ -17,7 +17,7 @@ res.json({result: false, error: 'Missing or empty fields'})
 }else{
 
     User.findOne({token}).then(data=>{
-      
+      console.log(data)
         if(data){
             const newPostCompany = new PostCompany({
                 idPost: uniqid(),// Generating random uniq id to be more secure.
@@ -29,7 +29,6 @@ res.json({result: false, error: 'Missing or empty fields'})
                 photo,
                 quantity,
                 availability_date,
-                author: data,
                 creation_date: new Date()
             })
             newPostCompany.save().then(newDoc=>{
