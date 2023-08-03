@@ -45,6 +45,8 @@ router.post('/signup', (req, res) => {
   });
 });
 
+
+
 router.post('/signin', (req, res) => {
   if (!checkBody(req.body, ['email', 'password'])) {
     res.json({ result: false, error: 'Missing or empty fields' });
@@ -57,6 +59,22 @@ router.post('/signin', (req, res) => {
     } else {
       res.json({ result: false, error: 'User not found or wrong password' });
     }
+  });
+});
+
+
+
+router.delete("/:userId", (req, res) => {
+  Place.deleteOne({user:  req.params.userId })
+  .then(data => {
+      console.log(data)
+      if (data.deletedCount >=1) {
+
+          res.json({ result: true, message: 'User deleted'});
+      } else {
+          res.json({ result: false, message: "Not deleted" });
+      }
+  
   });
 });
 
