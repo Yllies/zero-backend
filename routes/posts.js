@@ -59,7 +59,9 @@ router.post("/company/publish/:token", (req, res) => {
           quantity,
           availability_date,
           creation_date: new Date(),
-          isBooked: false,
+          isBooked: "Non", // Si pas réservé = Non
+          // Si en attente de réservation = En attente
+          // Si réservé = Oui
         });
         newPostCompany.save().then((newDoc) => {
           res.json({ result: true, data: newDoc });
@@ -124,7 +126,7 @@ router.put("/company/update/:token/:idPost", (req, res) => {
 router.put("/association/update/:token/:idPost", (req, res) => {
   const { idPost } = req.params;
   const { title, description, category } = req.body;
-  PostAssociation.findOne({ idPost }, {})
+  PostAssociation.findOne({ idPost })
     .populate("author")
     .then((data) => {
       if (data) {
@@ -182,6 +184,75 @@ router.delete("/association/delete/:token/:idPost", (req, res) => {
         });
       } else {
         res.json({ result: false, message: "Delete failed" });
+      }
+    });
+});
+
+router.put("/association/book/:token/:idPost", (req, res) => {
+  const { idPost } = req.params;
+  const { token } = req.params;
+  PostCompany.findOne({ idPost })
+    .populate("isBookedBy")
+    .then((data) => {
+      if (data.isBookedBy === null) {
+        User.findOne({ token }).then((data) => {
+          if (data) {
+            PostCompany.updateOne(
+              { idPost },
+              { isBookedBy: data, isBooked: "En attente" }
+            ).then((data) => {
+              if (data) {
+                // Si pas réservé = Non
+                // Si en attente de réservation = En attente
+                // Si réservé = Réservé
+                res.json({ result: true, message: "Réservation effectuée" });
+              } else {
+                res.json({ result: false, message: "Réservation échouée" });
+              }
+            });
+          }
+        });
+      } else {
+        res.json({ result: false, message: "Déjà réservé" });
+      }
+    });
+});
+
+router.put("/company/book/refuse/:token/:idPost", (req, res) => {
+  const { idPost } = req.params;
+
+  PostCompany.findOne({ idPost })
+    .populate("isBookedBy")
+    .then((data) => {
+      if (data.isBooked === "En attente") {
+        PostCompany.updateOne(
+          { idPost },
+          { isBookedBy: null, isBooked: "Non" }
+        ).then((data) => {
+          if (data) {
+            res.json({ result: true, message: "Réservation refusée" });
+          } else {
+            res.json({ result: false, message: "Annulation échouée" });
+          }
+        });
+      }
+    });
+});
+
+router.put("/company/book/accept/:token/:idPost", (req, res) => {
+  const { idPost } = req.params;
+
+  PostCompany.findOne({ idPost })
+    .populate("isBookedBy")
+    .then((data) => {
+      if (data.isBooked === "En attente") {
+        PostCompany.updateOne({ idPost }, { isBooked: "Oui" }).then((data) => {
+          if (data) {
+            res.json({ result: true, message: "Réservation confirmée" });
+          } else {
+            res.json({ result: false, message: "Confirmation échouée" });
+          }
+        });
       }
     });
 });
