@@ -65,17 +65,17 @@ router.post('/signin', (req, res) => {
 
 
 router.delete("/:userId", (req, res) => {
-  Place.deleteOne({user:  req.params.userId })
-  .then(data => {
-      console.log(data)
-      if (data.deletedCount >=1) {
+  const userId = req.params.userId;
 
-          res.json({ result: true, message: 'User deleted'});
+  User.deleteOne({ _id: userId })
+    .then(data => {
+      console.log(data);
+      if (data.deletedCount >= 1) {
+        res.json({ result: true, message: 'User deleted' });
       } else {
-          res.json({ result: false, message: "Not deleted" });
+        res.json({ result: false, message: 'User not found or already deleted' });
       }
-  
-  });
+    })
 });
 
 module.exports = router;
