@@ -46,7 +46,6 @@ router.get('/company/posts', (req, res) => {
   }
      
       PostCompany.find(filter)
-      .populate("author")
       .then((data) => {
         res.json({ result: true, data });
       })
