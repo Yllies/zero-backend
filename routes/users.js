@@ -72,7 +72,6 @@ router.post("/signup", (req, res) => {
               latitudeDelta: req.body.latitudeDelta,
               token: uid2(32),
             });
-
             newUser.save().then((newDoc) => {
               res.json({ result: true, token: newDoc.token });
             });
