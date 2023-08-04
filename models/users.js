@@ -12,6 +12,10 @@ const usersSchema = mongoose.Schema({
   phone_number: Number,
   url_site: String,
   logo: String,
+  longitude: Number,
+  latitude:Number,
+  longitudeDelta:Number,
+  latitudeDelta:Number,
   token: String,
 });
 

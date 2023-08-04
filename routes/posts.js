@@ -34,6 +34,7 @@ router.post("/company/publish/:token", (req, res) => {
   const { token } = req.params;
   const { title, description, category, photo, quantity, availability_date } =
     req.body;
+  console.log("lavalav back", availability_date, token);
   if (
     !checkBody(req.body, [
       "title",
@@ -47,7 +48,7 @@ router.post("/company/publish/:token", (req, res) => {
     res.json({ result: false, error: "Missing or empty fields" });
   } else {
     User.findOne({ token }).then((data) => {
-      console.log(data);
+      console.log("user", data);
       if (data) {
         const newPostCompany = new PostCompany({
           idPost: uniqid(), // Generating random uniq id to be more secure.
@@ -65,7 +66,8 @@ router.post("/company/publish/:token", (req, res) => {
           // If is booked = Oui
         });
         newPostCompany.save().then((newDoc) => {
-          req.json({ result: true, data: newDoc });
+          console.log("new doc saved", newDoc);
+          res.json({ result: true, data: newDoc });
         });
       }
     });
