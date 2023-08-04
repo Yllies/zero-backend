@@ -150,11 +150,12 @@ router.post("/signin", (req, res) => {
 });
 
 
-router.delete("/", (req, res) => {
+router.delete("/delete/:token", (req, res) => {
 
-  const token =  req.body.token
+  const token =  req.params.token
 
   User.findOne({ token }).then((user) => {
+    console.log(user)
     if (!user) {
       res.json({ result: false, error: "User not found" });
       return;
