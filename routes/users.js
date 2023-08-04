@@ -70,7 +70,6 @@ router.post('/signin', (req, res) => {
 
 router.delete("/", (req, res) => {
   const token = req.body.token;
-  const userId = req.body.userId; // On passera l'userId depuis le front
 
   User.findOne({ token })
     .then(user => {
@@ -78,7 +77,7 @@ router.delete("/", (req, res) => {
         res.json({ result: false, error: 'User not found' });
         return;
       }
-      User.deleteOne({ _id: userId })
+      User.deleteOne({ token })
         .then(data => {
           console.log(data);
           if (data.deletedCount >= 1) {
