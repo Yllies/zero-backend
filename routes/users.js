@@ -149,21 +149,10 @@ router.post("/signin", (req, res) => {
   );
 });
 
+
 router.delete("/", (req, res) => {
-  const token = req.body.token;
 
-  User.deleteOne({ _id: userId }).then((data) => {
-    console.log(data);
-    if (data.deletedCount >= 1) {
-      res.json({ result: true, message: "User deleted" });
-    } else {
-      res.json({ result: false, message: "User not found or already deleted" });
-    }
-  });
-});
-
-router.delete("/:userId", (req, res) => {
-  const userId = req.params.userId;
+  const token =  req.body.token
 
   User.findOne({ token }).then((user) => {
     if (!user) {
