@@ -68,10 +68,9 @@ router.post('/signin', (req, res) => {
 
 
 
-router.delete("/:userId", (req, res) => {
+router.delete("/:token", (req, res) => {
   const userId = req.params.userId;
-
-  User.deleteOne({ _id: userId })
+  User.deleteOne({ token})
     .then(data => {
       console.log(data);
       if (data.deletedCount >= 1) {
