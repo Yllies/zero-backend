@@ -18,6 +18,7 @@ router.get("/company", (req, res) => {
     }
   });
 });
+
 router.get("/charity", (req, res) => {
   PostAssociation.find().then((data) => {
     if (data) {
@@ -33,7 +34,7 @@ router.post("/company/publish/:token", (req, res) => {
   const { token } = req.params;
   const { title, description, category, photo, quantity, availability_date } =
     req.body;
-    console.log("lavalav back",availability_date, token)
+  console.log("lavalav back", availability_date, token);
   if (
     !checkBody(req.body, [
       "title",
@@ -60,12 +61,12 @@ router.post("/company/publish/:token", (req, res) => {
           quantity,
           availability_date,
           creation_date: new Date(),
-          isBooked: "Non", // Si pas réservé = Non
-          // Si en attente de réservation = En attente
-          // Si réservé = Oui
+          isBooked: "Non", // If not booked = Non
+          // If is in waiting = En attente
+          // If is booked = Oui
         });
         newPostCompany.save().then((newDoc) => {
-          console.log("new doc saved", newDoc)
+          console.log("new doc saved", newDoc);
           res.json({ result: true, data: newDoc });
         });
       }
@@ -190,6 +191,7 @@ router.delete("/association/delete/:token/:idPost", (req, res) => {
     });
 });
 
+// Send a request booking by the association
 router.put("/association/book/:token/:idPost", (req, res) => {
   const { idPost } = req.params;
   const { token } = req.params;
@@ -220,6 +222,7 @@ router.put("/association/book/:token/:idPost", (req, res) => {
     });
 });
 
+// Refuse a request booking by the company
 router.put("/company/book/refuse/:token/:idPost", (req, res) => {
   const { idPost } = req.params;
 
@@ -241,6 +244,8 @@ router.put("/company/book/refuse/:token/:idPost", (req, res) => {
     });
 });
 
+// Accept a request booking by the company
+
 router.put("/company/book/accept/:token/:idPost", (req, res) => {
   const { idPost } = req.params;
 
@@ -259,14 +264,32 @@ router.put("/company/book/accept/:token/:idPost", (req, res) => {
     });
 });
 
+// Find article by the idPost for the association
+router.get("/association/details/:token/:idPost", (req, res) => {
+  const { idPost } = req.params;
+  PostCompany.findOne({ idPost })
+    .populate("author")
+    .then((data) => {
+      if (data) {
+        res.json({ result: true, data });
+      } else {
+        res.json({ result: false, message: "Post non trouvé" });
+      }
+    });
+});
+
+// Find article by the id for the association
+router.get("/company/details/:token/:idPost", (req, res) => {
+  const { idPost } = req.params;
+  PostAssociation.findOne({ idPost })
+    .populate("author")
+    .then((data) => {
+      if (data) {
+        res.json({ result: true, data });
+      } else {
+        res.json({ result: false, message: "Post non trouvé" });
+      }
+    });
+});
+
 module.exports = router;
-// {
-//     title: String,
-//     description: String,
-//     category: String,
-//     photo: String,
-//     quantity: Number,
-//     availability_date: Date,
-//     author: { type: mongoose.Schema.Types.ObjectId, ref: "users" },
-//     creation_date: Date,
-// }
