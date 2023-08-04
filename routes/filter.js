@@ -6,14 +6,14 @@ const uniqid = require('uniqid');
 
 // Route pour obtenir des articles basés sur des filtres
 router.get('/company/posts', (req, res) => {
- 
-
+  
     // paramètres de filtre doivent être extraits de req.query, car ils sont passés dans l'URL en tant que paramètres de requête
 
     const { quantity, availability_date, latitude, longitude, radius } = req.query;
 
 
   // Filtrer les articles en fonction de la quantité, de la date dispo et de la localisation
+
   let filter = {};
 
     if (quantity) {
