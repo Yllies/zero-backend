@@ -296,7 +296,6 @@ router.get("/company/published/:token", (req, res) => {
   PostCompany.find()
     .populate("author")
     .then((data) => {
-      console.log(data);
       const result = data.filter(
         (post) => post.author.token === req.params.token
       );
