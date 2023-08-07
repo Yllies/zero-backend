@@ -34,7 +34,6 @@ router.post("/company/publish/:token", (req, res) => {
   const { token } = req.params;
   const { title, description, category, photo, quantity, availability_date } =
     req.body;
-  console.log("lavalav back", availability_date, token);
   if (
     !checkBody(req.body, [
       "title",
@@ -48,7 +47,6 @@ router.post("/company/publish/:token", (req, res) => {
     res.json({ result: false, error: "Missing or empty fields" });
   } else {
     User.findOne({ token }).then((data) => {
-      console.log("user", data);
       if (data) {
         const newPostCompany = new PostCompany({
           idPost: uniqid(), // Generating random uniq id to be more secure.
@@ -57,6 +55,7 @@ router.post("/company/publish/:token", (req, res) => {
           title,
           description,
           category,
+          author: data,
           photo,
           quantity,
           availability_date,
@@ -82,6 +81,7 @@ router.post("/association/publish/:token", (req, res) => {
     res.json({ result: false, error: "Missing or empty fields" });
   }
   User.findOne({ token }).then((data) => {
+    console.log("user", data);
     if (data) {
       const newPostAssociation = new PostAssociation({
         idPost: uniqid(), // Generating random uniq id to be more secure.
@@ -289,6 +289,18 @@ router.get("/company/details/:token/:idPost", (req, res) => {
       } else {
         res.json({ result: false, message: "Post non trouvé" });
       }
+    });
+});
+
+router.get("/company/published/:token", (req, res) => {
+  PostCompany.find()
+    .populate("author")
+    .then((data) => {
+      console.log(data);
+      const result = data.filter(
+        (post) => post.author.token === req.params.token
+      );
+      res.json({ result: true, data: result });
     });
 });
 
