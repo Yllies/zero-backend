@@ -309,10 +309,8 @@ router.get("/company/published/:token", (req, res) => {
   PostCompany.find()
     .populate("author")
     .then((data) => {
-      const result = data.filter(
-        (post) => post.author.token === req.params.token
-      );
-      res.json({ result: true, data: result });
+      const result = data.filter((post) => post.token === req.params.token);
+      res.json({ result: true, data });
     });
 });
 
@@ -340,5 +338,4 @@ router.get("/Charity/:idPost", (req, res) => {
     res.json({ result: true, data });
   });
 });
-
 module.exports = router;
