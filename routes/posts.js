@@ -251,11 +251,15 @@ router.put("/company/book/accept/:token/:idPost", (req, res) => {
 
   PostCompany.findOne({ idPost })
     .populate("isBookedBy")
-    .then((data) => {
-      if (data.isBooked === "En attente") {
+    .then((dataPopulate) => {
+      if (dataPopulate.isBooked === "En attente") {
         PostCompany.updateOne({ idPost }, { isBooked: "Oui" }).then((data) => {
           if (data) {
-            res.json({ result: true, message: "Réservation confirmée" });
+            res.json({
+              result: true,
+              message: "Réservation confirmée",
+              dataPopulate,
+            });
           } else {
             res.json({ result: false, message: "Confirmation échouée" });
           }
