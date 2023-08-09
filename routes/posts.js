@@ -193,8 +193,8 @@ router.delete("/association/delete/:token/:idPost", (req, res) => {
 
 // Send a request booking by the association
 router.put("/association/book/:token/:idPost", (req, res) => {
-  const { idPost } = req.params;
-  const { token } = req.params;
+  const { idPost, token } = req.params;
+
   PostCompany.findOne({ idPost })
     .populate("isBookedBy")
     .then((data) => {
@@ -220,6 +220,15 @@ router.put("/association/book/:token/:idPost", (req, res) => {
         res.json({ result: false, message: "Déjà réservé" });
       }
     });
+});
+
+router.put("/association/book/cancel/:token/:idPost", (req, res) => {
+  const { idPost } = req.params;
+  PostCompany.updateOne({ idPost }, { isBookedBy: null, isBooked: "Non" }).then(
+    () => {
+      res.json({ result: true, message: "Annulation de la réservation" });
+    }
+  );
 });
 
 // Refuse a request booking by the company
@@ -300,19 +309,17 @@ router.get("/company/published/:token", (req, res) => {
   PostCompany.find()
     .populate("author")
     .then((data) => {
-      const result = data.filter(
-        (post) => post.token === req.params.token
-      );
+      const result = data.filter((post) => post.token === req.params.token);
       res.json({ result: true, data });
     });
 });
 
 //route pour recupéré les données à utiliser pour les screen annonce
-router.get('/company/:idPost', async (req, res) => {
+router.get("/company/:idPost", async (req, res) => {
   try {
     const { idPost } = req.params;
-    
-    const post = await PostCompany.findOne({ idPost }).populate('author');
+
+    const post = await PostCompany.findOne({ idPost }).populate("author");
 
     if (!post) {
       return res.status(404).json({ error: 'Post not found' });
@@ -320,7 +327,7 @@ router.get('/company/:idPost', async (req, res) => {
 
     res.json({ post });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
