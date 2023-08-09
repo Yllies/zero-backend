@@ -174,4 +174,21 @@ router.delete("/delete/:token", (req, res) => {
   });
 });
 
+router.get('/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+    
+    const author = await User.findOne({ token })
+
+    if (!author) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    res.json(author);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 module.exports = router;

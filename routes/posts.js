@@ -303,4 +303,27 @@ router.get("/company/published/:token", (req, res) => {
     });
 });
 
+//route pour recupéré les données à utiliser pour les screen annonce
+router.get('/company/:idPost', async (req, res) => {
+  try {
+    const { idPost } = req.params;
+    
+    const post = await PostCompany.findOne({ idPost }).populate('author');
+
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    res.json({ post });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+  router.get('/Charity/:idPost', (req,res) => {
+    const id =req.params.idPost
+    PostAssociation.findOne({idPost:id}).then(data =>{
+      data
+      res.json({ result: true, data })})
+    })
 module.exports = router;
