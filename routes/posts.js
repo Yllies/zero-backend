@@ -10,6 +10,7 @@ const { checkBody } = require("../modules/checkBody");
 
 // Get all company posts
 router.get("/company", (req, res) => {
+  console.log("route /company");
   PostCompany.find().then((data) => {
     if (data) {
       res.json({ posts: data });
@@ -318,11 +319,15 @@ router.get("/company/published/:token", (req, res) => {
 router.get("/company/:idPost", async (req, res) => {
   try {
     const { idPost } = req.params;
+    console.log("idPost", idPost);
+    const post = await PostCompany.findOne({ idPost })
+      .populate("author")
+      .populate("isBookedBy");
+    console.log(post);
 
-    const post = await PostCompany.findOne({ idPost }).populate("author");
-
+    console.log("route /company");
     if (!post) {
-      return res.status(404).json({ error: 'Post not found' });
+      return res.status(404).json({ error: "Post not found" });
     }
 
     res.json({ post });
@@ -331,20 +336,19 @@ router.get("/company/:idPost", async (req, res) => {
   }
 });
 
-  router.get('/charity/:idPost', async (req,res) => {
-    try {
-      const { idPost } = req.params;
-      
-      const post = await PostAssociation.findOne({ idPost }).populate('author');
-  
-      if (!post) {
-        return res.status(404).json({ error: 'Post not found' });
-      }
-  
-      res.json({ post });
-    } catch (error) {
-      res.status(500).json({ error: 'Internal server error' });
+router.get("/charity/:idPost", async (req, res) => {
+  try {
+    const { idPost } = req.params;
+
+    const post = await PostAssociation.findOne({ idPost }).populate("author");
+    if (!post) {
+      return res.status(404).json({ error: "Post not found" });
     }
-  });
-    
+
+    res.json({ post });
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 module.exports = router;

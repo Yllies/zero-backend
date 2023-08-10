@@ -141,6 +141,7 @@ router.post("/signin", (req, res) => {
           token: data.token,
           email: data.email,
           name: data.name,
+          type: data.type,
         });
       } else {
         res.json({ result: false, error: "User not found or wrong password" });
@@ -149,13 +150,11 @@ router.post("/signin", (req, res) => {
   );
 });
 
-
 router.delete("/delete/:token", (req, res) => {
-
-  const token =  req.params.token
+  const token = req.params.token;
 
   User.findOne({ token }).then((user) => {
-    console.log(user)
+    console.log(user);
     if (!user) {
       res.json({ result: false, error: "User not found" });
       return;
@@ -174,21 +173,20 @@ router.delete("/delete/:token", (req, res) => {
   });
 });
 
-router.get('/:token', async (req, res) => {
+router.get("/:token", async (req, res) => {
   try {
     const { token } = req.params;
-    
-    const author = await User.findOne({ token })
+
+    const author = await User.findOne({ token });
 
     if (!author) {
-      return res.status(404).json({ error: 'Post not found' });
+      return res.status(404).json({ error: "Post not found" });
     }
 
     res.json(author);
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: "Internal server error" });
   }
 });
-
 
 module.exports = router;
