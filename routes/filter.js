@@ -2,57 +2,72 @@ var express = require('express');
 var router = express.Router();
 require('../models/connection');
 const PostCompany = require('../models/posts_companies');
+// const User = require('../models/users');
+
 const uniqid = require('uniqid');
 
 // Route pour obtenir des articles basés sur des filtres
 router.get('/company/posts', (req, res) => {
+  console.log("route", req.query)
   
-    // paramètres de filtre doivent être extraits de req.query, car ils sont passés dans l'URL en tant que paramètres de requête
+    // Paramètres de filtre doivent être extraits de req.query, car ils sont passés dans l'URL en tant que paramètres de requête
 
-    const { quantity, availability_date, latitude, longitude, radius } = req.query;
+    const { quantity, date, location, radius } = req.query;
 
 
-  // Filtrer les articles en fonction de la quantité, de la date dispo et de la localisation
-
-  let filter = {};
+    let filter = {};
 
     if (quantity) {
-        filter.quantity = quantity;
+      filter.quantity = quantity;
+      
+      if (quantity !== "1") {
+          const rangeArray = quantity.split(",");
+          const minValue = parseInt(rangeArray[0]);
+          const maxValue = parseInt(rangeArray[1]);
+  
+          if (!isNaN(minValue) && !isNaN(maxValue)) {
+              filter.quantity = { $gte: minValue, $lte: maxValue };
+          }
+      } else {
+          filter.quantity = 1;
       }
-
-      if (availability_date) {
-
-// $gte (greater than or equal to) méthode de MongoDB
-        filter.availability_date = { $gte: new Date(availability_date) };
-      }
-
-   // Filtrer par localisation si tous les paramètres nécessaires sont fournis
-  if (latitude && longitude && radius) {
-    // Convertir les paramètres en nombres
-    const lat = parseFloat(latitude);
-    const lon = parseFloat(longitude);
-    const rad = parseFloat(radius);
-
-    // Ajouter le filtre pour rechercher les articles dans le rayon spécifié autour des coordonnées
-    filter.location = {
-      $near: {
-        $geometry: {
-          type: "Point",
-          coordinates: [lon, lat],
-        },
-        $maxDistance: rad,
-      },
-    };
   }
-     
-      PostCompany.find(filter)
-      .then((data) => {
-        res.json({ result: true, data });
-      })
-      .catch((error) => {
-        res.json({ result: false, error: "Failed to fetch posts" });
-      });
-  });
 
+    // si la date est pas nulle, sinon ça sorte undefined
+    if (date != 'null') {
+        // $gte (greater than or equal to) méthode de MongoDB
+        filter.availability_date = { $gte: new Date(date)};
+    }
+
+    // const radius = req.query.radius;
+   
+
+    // if (radius !== undefined && radius !== '') {
+    //   radius = parseFloat(radius);
+    // }
+
+      // Filtrer en fonction de la distance (rayon en mètres)
+      if (location) {
+        filter.location = {
+
+        };
+      }
+    // Utiliser la méthode find directement sur le modèle PostCompany pour effectuer la recherche
+    // populate sur pour récupérer l'adresse de l'auteur pour filter en fonction de sa position
+
+    PostCompany.find(filter)
+  //  Date : { $gte: new Date(availability_date) };
+    .populate("author")
+        .then((data) => {
+          if(data.length > 0){
+            res.json({ result: true, data });
+          } else {
+            res.json({ result: "No matching posts found" });
+          }
+        })
+        .catch((error) => {
+            res.json({ result: false, error: "Failed to fetch " + error });
+        });
+});
 
 module.exports = router;
