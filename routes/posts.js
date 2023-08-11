@@ -323,7 +323,6 @@ router.get("/charity/published/:token", (req, res) => {
     });
 });
 
-
 //route pour recupéré les données à utiliser pour les screen annonce
 router.get("/company/:idPost", async (req, res) => {
   try {
