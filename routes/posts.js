@@ -310,16 +310,16 @@ router.get("/company/published/:token", (req, res) => {
   PostCompany.find()
     .populate("author")
     .then((data) => {
-      const result = data.filter((post) => post.token === req.params.token);
-      res.json({ result: true, data });
+      const result = data.filter((post) => post.author.token === req.params.token);
+      res.json({ result: true, data: result });
     });
 });
 router.get("/charity/published/:token", (req, res) => {
   PostAssociation.find()
     .populate("author")
     .then((data) => {
-      const result = data.filter((post) => post.token === req.params.token);
-      res.json({ result: true, data });
+      const result = data.filter((post) => post.author.token === req.params.token);
+      res.json({ result: true, data: result });
     });
 });
 
