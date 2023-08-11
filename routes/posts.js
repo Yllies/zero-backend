@@ -314,6 +314,15 @@ router.get("/company/published/:token", (req, res) => {
       res.json({ result: true, data });
     });
 });
+router.get("/charity/published/:token", (req, res) => {
+  PostAssociation.find()
+    .populate("author")
+    .then((data) => {
+      const result = data.filter((post) => post.token === req.params.token);
+      res.json({ result: true, data });
+    });
+});
+
 
 //route pour recupéré les données à utiliser pour les screen annonce
 router.get("/company/:idPost", async (req, res) => {
