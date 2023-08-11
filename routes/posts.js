@@ -75,7 +75,7 @@ router.post("/company/publish/:token", (req, res) => {
 });
 
 // Publish post by the association
-router.post("/association/publish/:token", (req, res) => {
+router.post("/charity/publish/:token", (req, res) => {
   const { token } = req.params;
   const { title, description, category } = req.body;
   if (!checkBody(req.body, ["title", "description", "category"])) {
