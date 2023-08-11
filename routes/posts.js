@@ -172,7 +172,7 @@ router.delete("/company/delete/:token/:idPost", (req, res) => {
 });
 
 // Delete post by the association
-router.delete("/association/delete/:token/:idPost", (req, res) => {
+router.delete("/charity/delete/:token/:idPost", (req, res) => {
   const { idPost } = req.params;
 
   PostAssociation.findOne({ idPost })
