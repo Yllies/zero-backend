@@ -127,7 +127,7 @@ router.put("/company/update/:token/:idPost", (req, res) => {
 });
 
 // Update post by the association
-router.put("/association/update/:token/:idPost", (req, res) => {
+router.put("/charity/update/:token/:idPost", (req, res) => {
   const { idPost } = req.params;
   const { title, description, category } = req.body;
   PostAssociation.findOne({ idPost })
