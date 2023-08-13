@@ -149,6 +149,37 @@ router.post("/signin", (req, res) => {
     }
   );
 });
+router.put("/resetPassword/:token", (req, res) => {
+  if (!checkBody(req.body, ["email", "username"])) {
+    return res.json({ result: false, error: "Missing or empty fields" });
+  }
+
+  const { email, username } = req.body;
+
+  User.findOne({ email: { $regex: new RegExp(email, "i")} , username:username})
+    .then((user) => {
+      if (!user) {
+        return res.json({ result: false, error: "User not found" });
+      }
+
+      const hash = bcrypt.hashSync(req.body.password, 10);
+      user.password = hash;
+
+      return user.save();
+    })
+    .then(() => {
+      res.json({ result: true, message: "Password successfully updated" });
+    })
+    .catch((error) => {
+      console.error("Error during password reset:", error);
+      res
+       
+        .json({
+          result: false,
+          error: "An error occurred during password reset",
+        });
+    });
+});
 
 router.delete("/delete/:token", (req, res) => {
   const token = req.params.token;
