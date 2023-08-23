@@ -42,7 +42,7 @@ describe("User Routes", () => {
 
     expect(response.status).toBe(400);
     expect(response.body.result).toBe(false);
-    expect(response.body.error).toBe("Missing or empty fields");
+    expect(response.body.error).toBe("Champs manquants ou vides");
   });
 
   it("should return 409 if user already exists", async () => {
@@ -69,7 +69,7 @@ describe("User Routes", () => {
 
     expect(response.status).toBe(409);
     expect(response.body.result).toBe(false);
-    expect(response.body.error).toBe("User already exists");
+    expect(response.body.error).toBe("L'utilisateur existe déjà");
   });
 
   it("should sign up a new user", async () => {
@@ -115,7 +115,7 @@ describe("User Routes", () => {
 
   it("should reset user password", async () => {
     const token = "YpNZJjxXNy1D-JOaQWn6l66jQ-KQx13R"; // Replace with an actual token
-    const newPassword = "a";
+    const newPassword = "b";
 
     const response = await request(app)
       .put(`/resetPassword/${token}`)
