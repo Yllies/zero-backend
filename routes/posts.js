@@ -127,7 +127,7 @@ router.put("/company/update/:token/:idPost", (req, res) => {
 });
 
 // Update post by the association
-router.put("/association/update/:token/:idPost", (req, res) => {
+router.put("/charity/update/:token/:idPost", (req, res) => {
   const { idPost } = req.params;
   const { title, description, category } = req.body;
   PostAssociation.findOne({ idPost })
@@ -172,7 +172,7 @@ router.delete("/company/delete/:token/:idPost", (req, res) => {
 });
 
 // Delete post by the association
-router.delete("/association/delete/:token/:idPost", (req, res) => {
+router.delete("/charity/delete/:token/:idPost", (req, res) => {
   const { idPost } = req.params;
 
   PostAssociation.findOne({ idPost })
@@ -310,7 +310,9 @@ router.get("/company/published/:token", (req, res) => {
   PostCompany.find()
     .populate("author")
     .then((data) => {
-      const result = data.filter((post) => post.author.token === req.params.token);
+      const result = data.filter(
+        (post) => post.author.token === req.params.token
+      );
       res.json({ result: true, data: result });
     });
 });
@@ -318,7 +320,9 @@ router.get("/charity/published/:token", (req, res) => {
   PostAssociation.find()
     .populate("author")
     .then((data) => {
-      const result = data.filter((post) => post.author.token === req.params.token);
+      const result = data.filter(
+        (post) => post.author.token === req.params.token
+      );
       res.json({ result: true, data: result });
     });
 });
