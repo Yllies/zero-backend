@@ -1,15 +1,16 @@
 var express = require("express");
 var router = express.Router();
-
 require("../models/connection");
 const User = require("../models/users");
 const { checkBody } = require("../modules/checkBody");
 const bcrypt = require("bcrypt");
 const uid2 = require("uid2");
 
-router.post("/signup", (req, res) => {
-  if (
-    !checkBody(req.body, [
+// INSCRIPTION
+router.post("/signup", async (req, res) => {
+  try {
+    // Liste des champs requis pour l'inscription
+    const requiredFields = [
       "email",
       "username",
       "password",
@@ -21,121 +22,67 @@ router.post("/signup", (req, res) => {
       "latitude",
       "latitudeDelta",
       "longitudeDelta",
-    ])
-  ) {
-    res.json({ result: false, error: "Missing or empty fields" });
-    return;
-  }
-
-  // Check if the user has not already been registered
-  //on check via leur siret/siret
-  const tokenAPI = "e6b24e73-7c80-3ec5-b16d-358d9ab783f9";
-
-  fetch(
-    `https://api.insee.fr/entreprises/sirene/V3/siren/${req.body.siret_siren}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${tokenAPI}`,
-      },
+    ];
+    // Vérification si tous les champs requis sont présents et non vides dans la requête
+    if (!checkBody(req.body, requiredFields)) {
+      return res
+        .status(400)
+        .json({ result: false, error: "Champs manquants ou vides" });
     }
-  )
-    .then((response) => response.json())
-    .then((data) => {
-      console.log(JSON.stringify(data, null, 4));
-      if (
-        data.identifiantAssociationUniteLegale !== null &&
-        data.header.statut === 200
-      ) {
-        User.findOne({ siret_siren: req.body.siret_siren }).then((data) => {
-          if (data === null) {
-            const hash = bcrypt.hashSync(req.body.password, 10);
-            //pour les données qu'on a pas demandé lors de l'inscription, je les enregistre par defaut en null
-            //par la suite bien on pourras les modifié via une route PUT
-
-            const newUser = new User({
-              email: req.body.email,
-              password: hash,
-              name: req.body.name,
-              username: req.body.username,
-              address: req.body.address,
-              siret_siren: req.body.siret_siren,
-              type: req.body.type,
-              description: null,
-              phone_number: null,
-              url_site: null,
-              logo: null,
-              longitude: req.body.longitude,
-              latitude: req.body.latitude,
-              longitudeDelta: req.body.longitudeDelta,
-              latitudeDelta: req.body.latitudeDelta,
-              token: uid2(32),
-            });
-            newUser.save().then((newDoc) => {
-              res.json({ result: true, token: newDoc.token });
-            });
-          } else {
-            // User already exists in database
-            res.json({ result: false, error: "User already exists" });
-          }
-        });
-      } else if (
-        data.identifiantAssociationUniteLegale === null &&
-        data.header.statut === 200
-      ) {
-        User.findOne({ siret_siren: req.body.siret_siren }).then((data) => {
-          if (data === null) {
-            const hash = bcrypt.hashSync(req.body.password, 10);
-            //pour les données qu'on a pas demandé lors de l'inscription, je les enregistre par defaut en null
-            //par la suite bien on pourras les modifié via une route PUT
-
-            const newUser = new User({
-              email: req.body.email,
-              password: hash,
-              name: req.body.name,
-              username: req.body.username,
-              address: req.body.address,
-              siret_siren: req.body.siret_siren,
-              type: req.body.type,
-              description: null,
-              phone_number: null,
-              url_site: null,
-              logo: null,
-              longitude: req.body.longitude,
-              latitude: req.body.latitude,
-              longitudeDelta: req.body.longitudeDelta,
-              latitudeDelta: req.body.latitudeDelta,
-              token: uid2(32),
-            });
-
-            newUser.save().then((newDoc) => {
-              res.json({ result: true, token: newDoc.token });
-            });
-          } else {
-            // User already exists in database
-            res.json({ result: false, error: "User already exists" });
-          }
-        });
-        // Cas entreprise
-      }
-      // if (data.identifiantAssociationUniteLegale !== null) {
-      //   // If this is an association, redirect to HomeAssociationScreen
-      // } else {
-      //   // If this is a company, redirect to HomeCompanyScreen
-      // }
+    // Recherche si un utilisateur existe déjà avec le même numéro SIRET/SIREN
+    const existingUser = await User.findOne({
+      siret_siren: req.body.siret_siren,
     });
+    if (existingUser) {
+      return res
+        .status(409)
+        .json({ result: false, error: "L'utilisateur existe déjà" });
+    }
+    // Hashage du mot de passe avant de le stocker dans la base de données
+    const hash = bcrypt.hashSync(req.body.password, 10);
+    // Création d'un nouvel utilisateur avec les données fournies dans la requête
+    const newUser = new User({
+      email: req.body.email,
+      password: hash,
+      name: req.body.name,
+      username: req.body.username,
+      address: req.body.address,
+      siret_siren: req.body.siret_siren,
+      type: req.body.type,
+      description: null,
+      phone_number: null,
+      url_site: null,
+      logo: null,
+      longitude: req.body.longitude,
+      latitude: req.body.latitude,
+      longitudeDelta: req.body.longitudeDelta,
+      latitudeDelta: req.body.latitudeDelta,
+      token: uid2(32),
+    });
+    // Sauvegarde du nouvel utilisateur dans la base de données
+    const savedUser = await newUser.save();
+    // Réponse indiquant le succès de l'inscription et renvoyant le token de l'utilisateur
+    res.status(200).json({ result: true, token: savedUser.token });
+  } catch (error) {
+    // En cas d'erreur, affichage de l'erreur dans la console et envoi d'une réponse d'erreur au client
+    console.error(error);
+    res.status(500).json({ result: false, error: "Erreur interne du serveur" });
+  }
 });
 
+// CONNEXION
 router.post("/signin", (req, res) => {
+  // Vérification si les champs 'email' et 'password' sont présents et non vides dans la requête
   if (!checkBody(req.body, ["email", "password"])) {
-    res.json({ result: false, error: "Missing or empty fields" });
+    res.json({ result: false, error: "Champs manquants ou vides" });
     return;
   }
-  //le find on le fait par rapport au mail
+  // Recherche de l'utilisateur correspondant à l'adresse email fournie (insensible à la casse)
   User.findOne({ email: { $regex: new RegExp(req.body.email, "i") } }).then(
     (data) => {
+      // Vérification si le mot de passe fourni correspond au mot de passe hashé dans la base de données
       if (bcrypt.compareSync(req.body.password, data.password)) {
+        // Réponse en cas de correspondance : succès de la connexion, renvoi des informations de l'utilisateur
         res.json({
           result: true,
           token: data.token,
@@ -144,48 +91,104 @@ router.post("/signin", (req, res) => {
           type: data.type,
         });
       } else {
-        res.json({ result: false, error: "User not found or wrong password" });
+        // Réponse en cas de non-correspondance : utilisateur introuvable ou mot de passe incorrect
+        res.json({
+          result: false,
+          error: "Utilisateur non trouvé ou mot de passe incorrect",
+        });
       }
     }
   );
 });
 
-router.delete("/delete/:token", (req, res) => {
-  const token = req.params.token;
+// REINITIALISATION DE MOT DE PASSE
+router.put("/resetPassword/:token", (req, res) => {
+  // Vérification si les champs 'email' et 'username' sont présents et non vides dans la requête
+  if (!checkBody(req.body, ["email", "username"])) {
+    return res.json({ result: false, error: "Champs manquants ou vides" });
+  }
+  // Extraction de l'email et du nom d'utilisateur de la requête
+  const { email, username } = req.body;
+  // Recherche de l'utilisateur correspondant à l'email et au nom d'utilisateur fournis
+  User.findOne({
+    email: { $regex: new RegExp(email, "i") },
+    username: username,
+  })
+    .then((user) => {
+      // Vérification si l'utilisateur existe
+      if (!user) {
+        return res.json({ result: false, error: "Utilisateur introuvable" });
+      }
+      // Hashage du nouveau mot de passe et mise à jour du mot de passe dans l'objet utilisateur
+      const hash = bcrypt.hashSync(req.body.password, 10);
+      user.password = hash;
+      // Sauvegarde des modifications de l'utilisateur dans la base de données
+      return user.save();
+    })
+    .then(() => {
+      // Réponse en cas de succès : le mot de passe a été réinitialisé avec succès
+      res.json({
+        result: true,
+        message: "Mot de passe réinitialisé avec succès",
+      });
+    })
+    .catch((error) => {
+      // Gestion des erreurs : affichage de l'erreur dans la console et réponse d'erreur au client
+      res.json({
+        result: false,
+        error:
+          "Une erreur s'est produite lors de la réinitialisation du mot de passe",
+      });
+    });
+});
 
+// SUPPRESSION DE COMPTE
+router.delete("/delete/:token", (req, res) => {
+  // Récupération du token à partir des paramètres de la requête
+  const token = req.params.token;
+  // Recherche de l'utilisateur correspondant au token dans la base de données
   User.findOne({ token }).then((user) => {
+    // Affichage de l'utilisateur trouvé dans la console à des fins de vérification
     console.log(user);
+    // Vérification si l'utilisateur existe
     if (!user) {
-      res.json({ result: false, error: "User not found" });
+      res.json({ result: false, error: "Utilisateur introuvable" });
       return;
     }
+    // Suppression de l'utilisateur correspondant au token de la base de données
     User.deleteOne({ token }).then((data) => {
+      // Affichage des informations de suppression dans la console à des fins de vérification
       console.log(data);
+      // Vérification si l'utilisateur a été supprimé avec succès
       if (data.deletedCount >= 1) {
-        res.json({ result: true, message: "User deleted" });
+        res.json({ result: true, message: "Utilisateur supprimé" });
       } else {
         res.json({
           result: false,
-          message: "User not found or already deleted",
+          message: "Utilisateur introuvable ou déjà supprimé",
         });
       }
     });
   });
 });
 
+// INFOS USER
 router.get("/:token", async (req, res) => {
   try {
+    // Récupération du token à partir des paramètres de la requête
     const { token } = req.params;
-
+    // Recherche de l'utilisateur correspondant au token dans la base de données
     const author = await User.findOne({ token });
-
+    // Vérification si l'utilisateur existe
     if (!author) {
-      return res.status(404).json({ error: "Post not found" });
+      // Réponse en cas d'absence d'utilisateur : erreur 404 (non trouvé)
+      return res.status(404).json({ error: "Utilisateur non trouvé" });
     }
-
+    // Réponse avec les informations de l'utilisateur
     res.json(author);
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
+    // Gestion des erreurs : réponse en cas d'erreur interne du serveur
+    res.status(500).json({ error: "Erreur interne du serveur" });
   }
 });
 

@@ -16,7 +16,8 @@
     "morgan": "~1.9.1",
     "node-fetch": "2",
     "uid2": "^1.0.0",
-    "uniqid": "^5.4.0"
+    "uniqid": "^5.4.0",
+    "vercel": "^32.0.1"
   },
   "devDependencies": {
     "jest": "^28.1.1",

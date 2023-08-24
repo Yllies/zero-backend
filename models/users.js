@@ -9,7 +9,7 @@ const usersSchema = mongoose.Schema({
   siret_siren: Number,
   type: String,
   description: String,
-  phone_number: Number,
+  phone_number: String,
   url_site: String,
   logo: String,
   longitude: Number,
