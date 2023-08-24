@@ -12,7 +12,7 @@ router.get('/company/posts', (req, res) => {
   
     // Paramètres de filtre doivent être extraits de req.query, car ils sont passés dans l'URL en tant que paramètres de requête
 
-    const { quantity, date, location, radius } = req.query;
+    const { quantity, date } = req.query;
 
 
     let filter = {};
@@ -39,25 +39,13 @@ router.get('/company/posts', (req, res) => {
         filter.availability_date = { $gte: new Date(date)};
     }
 
-    // const radius = req.query.radius;
-   
 
-    // if (radius !== undefined && radius !== '') {
-    //   radius = parseFloat(radius);
-    // }
-
-      // Filtrer en fonction de la distance (rayon en mètres)
-      if (location) {
-        filter.location = {
-
-        };
-      }
     // Utiliser la méthode find directement sur le modèle PostCompany pour effectuer la recherche
     // populate sur pour récupérer l'adresse de l'auteur pour filter en fonction de sa position
 
     PostCompany.find(filter)
   //  Date : { $gte: new Date(availability_date) };
-    .populate("author")
+
         .then((data) => {
           if(data.length > 0){
             res.json({ result: true, data });
