@@ -5,39 +5,46 @@ const User = require("../models/users");
 const PostCompany = require("../models/posts_companies");
 const PostAssociation = require("../models/posts_associations");
 const uniqid = require("uniqid");
-
 const { checkBody } = require("../modules/checkBody");
 
-// Get all company posts
+// TOUS LES POSTS DES ENTREPRISES
 router.get("/company", (req, res) => {
-  // On find tous les posts avec la methode find
+  // Recherche de toutes les publications de sociétés dans la base de données
   PostCompany.find().then((data) => {
+    // Vérification si des données ont été trouvées
     if (data) {
+      // Réponse avec les données de publications de sociétés
       res.json({ posts: data });
     } else {
-      res.json({ error: "Unknown error!" });
+      // Réponse en cas d'erreur inconnue
+      res.json({ error: "Erreur inconnue !" });
     }
   });
 });
 
+// TOUS LES POSTS DES ASSOCIATIONS
 router.get("/charity", (req, res) => {
-  // On find tous les posts avec la methode find
+  // Recherche de toutes les publications d'associations caritatives dans la base de données
   PostAssociation.find().then((data) => {
+    // Vérification si des données ont été trouvées
     if (data) {
+      // Réponse avec les données de publications d'associations caritatives
       res.json({ posts: data });
     } else {
-      res.json({ error: "Unknown error!" });
+      // Réponse en cas d'erreur inconnue
+      res.json({ error: "Erreur inconnue !" });
     }
   });
 });
 
-// Publish post by the company
+// NOUVEAU DON
 router.post("/company/publish/:token", (req, res) => {
+  // Récupération du token d'authentification à partir des paramètres de la requête
   const { token } = req.params;
+  // Récupération des champs nécessaires à partir du corps de la requête
   const { title, description, category, photo, quantity, availability_date } =
     req.body;
-
-  // On check si tous les champs sont bien rempli
+  // Vérification si tous les champs requis sont présents et non vides dans la requête
   if (
     !checkBody(req.body, [
       "title",
@@ -48,17 +55,17 @@ router.post("/company/publish/:token", (req, res) => {
       "availability_date",
     ])
   ) {
-    // Si c'est pas tout rempli, on renvois un message d'erreur
-    res.json({ result: false, error: "Missing or empty fields" });
+    res.json({ result: false, error: "Champs manquants ou vides" });
   } else {
-    // Sinon, on fait une verification si l'utilisateur qui veux publier est bien dans la BDD pour poster
+    // Recherche de l'utilisateur correspondant au token dans la base de données
     User.findOne({ token }).then((data) => {
       // Si il existe bien dans la BDD, on créer
       if (data) {
+        // Création d'une nouvelle publication de société avec les données fournies
         const newPostCompany = new PostCompany({
-          idPost: uniqid(), // Generating random uniq id to be more secure.
-          //                 We want to transit the uniq id in the URL,
-          //                  and we never do that with the id generating by mongoose
+          idPost: uniqid(), // Génération d'un identifiant unique aléatoire pour plus de sécurité.
+          //                 Nous voulons transmettre cet identifiant unique dans l'URL,
+          //                 et nous ne le faisons jamais avec l'identifiant généré par mongoose
           title,
           description,
           category,
@@ -67,13 +74,12 @@ router.post("/company/publish/:token", (req, res) => {
           quantity,
           availability_date,
           creation_date: new Date(),
-          isBooked: "Non", // If not booked = Non
-          // If is in waiting = En attente
-          // If is booked = Oui
+          isBooked: "Non", // Si non réservé = Non
+          // Si en attente = En attente
+          // Si réservé = Oui
         });
-        // On le save dans la bdd
+        // Sauvegarde de la nouvelle publication de société dans la base de données
         newPostCompany.save().then((newDoc) => {
-          console.log("new doc saved", newDoc);
           res.json({ result: true, data: newDoc });
         });
       }
@@ -81,200 +87,229 @@ router.post("/company/publish/:token", (req, res) => {
   }
 });
 
-// Publish post by the association
+// NOUVEAU BESOIN
 router.post("/charity/publish/:token", (req, res) => {
+  // Récupération du token d'authentification à partir des paramètres de la requête
   const { token } = req.params;
+  // Récupération des champs nécessaires à partir du corps de la requête
   const { title, description, category } = req.body;
-  // Check si les champs sont rempli
+  // Vérification si tous les champs requis sont présents et non vides dans la requête
   if (!checkBody(req.body, ["title", "description", "category"])) {
-    // Renvoi erreur si c'est pas rempli
-    res.json({ result: false, error: "Missing or empty fields" });
+    res.json({ result: false, error: "Champs manquants ou vides" });
+  } else {
+    // Recherche de l'utilisateur correspondant au token dans la base de données
+    User.findOne({ token }).then((data) => {
+      // Affichage de l'utilisateur trouvé dans la console à des fins de vérification
+      if (data) {
+        // Création d'une nouvelle publication d'association caritative avec les données fournies
+        const newPostAssociation = new PostAssociation({
+          idPost: uniqid(), // Génération d'un identifiant unique aléatoire pour plus de sécurité.
+          //                 Nous voulons transmettre cet identifiant unique dans l'URL,
+          //                 et nous ne le faisons jamais avec l'identifiant généré par mongoose
+          title,
+          description,
+          category,
+          author: data,
+          creation_date: new Date(),
+        });
+        // Sauvegarde de la nouvelle publication d'association caritative dans la base de données
+        newPostAssociation.save().then((newDoc) => {
+          // Réponse avec les informations de la nouvelle publication
+          res.json({ result: true, data: newDoc });
+        });
+      }
+    });
   }
-  // On verifie que l'utilisateur qui veux publier est bien inscris dans la BDD
-  User.findOne({ token }).then((data) => {
-    console.log("user", data);
-    // Si c'est le cas on créer le post
-    if (data) {
-      const newPostAssociation = new PostAssociation({
-        idPost: uniqid(), // Generating random uniq id to be more secure.
-        //                 We want to transit the uniq id in the URL,
-        //                  and we never do that with the id generating by mongoose
-        title,
-        description,
-        category,
-        author: data,
-        creation_date: new Date(),
-      });
-      // On save le post en BDD
-      newPostAssociation.save().then((newDoc) => {
-        res.json({ result: true, data: newDoc });
-      });
-    }
-  });
 });
 
-// Update post by the company
+// MAJ DON
 router.put("/company/update/:token/:idPost", (req, res) => {
+  // Récupération de l'id de la publication à partir des paramètres de la requête
   const { idPost } = req.params;
+  // Récupération des champs nécessaires à partir du corps de la requête
   const { title, description, category, photo, quantity, availability_date } =
     req.body;
-  // Avec le findOne on vient chercher les détails du post via son ID récuperé en params
-  PostCompany.findOne({ idPost })
-    .populate("author") // Le populate permet de récuperer les infos de l'auteur du post
+  // Recherche de la publication d'offre de société correspondant à l'id dans la base de données
+  PostCompany.findOne({ idPost }, {})
+    .populate("author") // Remplissage de la référence d'auteur pour obtenir les informations de l'auteur
     .then((data) => {
       // Si le post est trouvé, on modifie donc les champs modifiés via on ID
       if (data) {
+        // Mise à jour de la publication d'offre de société avec les nouvelles données
         PostCompany.updateOne(
           { idPost },
           { title, description, category, photo, quantity, availability_date }
         ).then((data) => {
           // Si c'est modifié, on renvoit un message "Post updated"
           if (data) {
-            res.json({ result: true, message: "Post updated" });
+            // Réponse en cas de succès de la mise à jour
+            res.json({ result: true, message: "Publication mise à jour" });
           } else {
-            // Sinon, on renvoit un message "Update failed"
-            res.json({ result: false, message: "Update failed" });
+            // Réponse en cas d'échec de la mise à jour
+            res.json({ result: false, message: "Mise à jour échouée" });
           }
         });
       } else {
-        // Si le post est pas trouvé, on renvoi "Post not found"
-        res.json({ result: false, message: "Post not found" });
+        // Réponse en cas d'absence de la publication à mettre à jour
+        res.json({ result: false, message: "Mise à jour échouée" });
       }
     });
 });
 
-// Update post by the association
+// MAJ BESOIN
 router.put("/charity/update/:token/:idPost", (req, res) => {
+  // Récupération de l'id de la publication à partir des paramètres de la requête
   const { idPost } = req.params;
+  // Récupération des champs nécessaires à partir du corps de la requête
   const { title, description, category } = req.body;
+  // Recherche de la publication d'offre d'association caritative correspondant à l'id dans la base de données
   PostAssociation.findOne({ idPost })
-    .populate("author")
+    .populate("author") // Remplissage de la référence d'auteur pour obtenir les informations de l'auteur
     .then((data) => {
       if (data) {
+        // Mise à jour de la publication d'offre d'association caritative avec les nouvelles données
         PostAssociation.updateOne(
           { idPost },
           { title, description, category }
         ).then((data) => {
           if (data) {
-            res.json({ result: true, message: "Post updated" });
+            // Réponse en cas de succès de la mise à jour
+            res.json({ result: true, message: "Publication mise à jour" });
           } else {
-            res.json({ result: false, message: "Update failed" });
+            // Réponse en cas d'échec de la mise à jour
+            res.json({ result: false, message: "Mise à jour échouée" });
           }
         });
       } else {
-        res.json({ result: false, message: "Update failed" });
+        // Réponse en cas d'absence de la publication à mettre à jour
+        res.json({ result: false, message: "Mise à jour échouée" });
       }
     });
 });
 
-// Delete post by the company
+// SUPPRESSION DON
 router.delete("/company/delete/:token/:idPost", (req, res) => {
+  // Récupération de l'id de la publication à partir des paramètres de la requête
   const { idPost } = req.params;
-  // On cherche le post l'ID qu'on recupère en params
+  // Recherche de la publication d'offre de société correspondant à l'id dans la base de données
   PostCompany.findOne({ idPost })
-    .populate("author") // On populate author pour récuperer les information de l'auteur du post afin de checker coté front si l'id de l'auteur correspond bien à l'id de l'utilisateur connecté
+    .populate("author") // Remplissage de la référence d'auteur pour obtenir les informations de l'auteur
     .then((data) => {
       // Si c'est trouvé, on va delete le post via son ID
       if (data) {
+        // Suppression de la publication d'offre de société correspondant à l'id de la base de données
         PostCompany.deleteOne({ idPost }).then((data) => {
           if (data.deletedCount === 0) {
-            // Lorsqu'on supprime un post, on reçoit un objet avec une clef deletedCount, si c'est égale à 0, c'est que la suppression a échouée
-            res.json({ result: false, message: "Delete failed" });
+            // Réponse en cas d'échec de la suppression
+            res.json({ result: false, message: "Suppression échouée" });
           } else {
-            // Si c'est pas égale à 0, la suppression a été effectuée
-            res.json({ result: true, message: "Post deleted" });
+            // Réponse en cas de succès de la suppression
+            res.json({ result: true, message: "Publication supprimée" });
           }
         });
       } else {
-        // Si le post est pas trouvée, on renvoi un message "Post not found"
-        res.json({ result: false, message: "Post not found" });
+        // Réponse en cas d'absence de la publication à supprimer
+        res.json({ result: false, message: "Suppression échouée" });
       }
     });
 });
 
-// Delete post by the association
+// SUPPRESSION BESOIN
 router.delete("/charity/delete/:token/:idPost", (req, res) => {
+  // Récupération de l'id de la publication à partir des paramètres de la requête
   const { idPost } = req.params;
-
+  // Recherche de la publication d'offre d'association caritative correspondant à l'id dans la base de données
   PostAssociation.findOne({ idPost })
-    .populate("author")
+    .populate("author") // Remplissage de la référence d'auteur pour obtenir les informations de l'auteur
     .then((data) => {
       if (data) {
+        // Suppression de la publication d'offre d'association caritative correspondant à l'id de la base de données
         PostAssociation.deleteOne({ idPost }).then((data) => {
           if (data.deletedCount === 0) {
-            res.json({ result: false, message: "Delete failed" });
+            // Réponse en cas d'échec de la suppression
+            res.json({ result: false, message: "Suppression échouée" });
           } else {
-            res.json({ result: true, message: "Post deleted" });
+            // Réponse en cas de succès de la suppression
+            res.json({ result: true, message: "Publication supprimée" });
           }
         });
       } else {
-        res.json({ result: false, message: "Delete failed" });
+        // Réponse en cas d'absence de la publication à supprimer
+        res.json({ result: false, message: "Suppression échouée" });
       }
     });
 });
 
-// Send a request booking by the association
-router.put("/association/book/:token/:idPost", (req, res) => {
+// RESERVATION DE DONS
+router.put("/charity/book/:token/:idPost", (req, res) => {
+  // Récupération de l'id de la publication et du token d'authentification à partir des paramètres de la requête
   const { idPost, token } = req.params;
-  // On cherche le post via l'ID passé en params
+  // Recherche de la publication d'offre de société correspondant à l'id dans la base de données
   PostCompany.findOne({ idPost })
-    .populate("isBookedBy") // On populate isBookedBy afin de récuperer les informations de celui qui a reservé ou non le post
+    .populate("isBookedBy") // Remplissage de la référence de réservation pour obtenir les informations de la réservation
     .then((data) => {
       if (data.isBookedBy === null) {
+        // Si la publication n'est pas encore réservée
         User.findOne({ token }).then((data) => {
           // Si le post est trouvé est qu'il n'est reservé par personne, on reherche ensuite les infos de l'utilisateur connecté
           if (data) {
-            // Lorsque les informations de l'utilisateur connecté son recupéré, on va modifier la clef etrangère du post isBookedBy en envoyant les informations de celui qui demande la réservation, puis on passe la clef Booked à "En attente"
+            // Mise à jour de la publication d'offre de société avec les nouvelles données de réservation
             PostCompany.updateOne(
               { idPost },
               { isBookedBy: data, isBooked: "En attente" }
             ).then((data) => {
               if (data) {
-                // Lorsque la modification de la clef etrangere et isBooked est effectué, on envoi un message "Réservation effectuée"
-
+                // Réponse en cas de succès de la réservation
                 // Si pas réservé = Non
                 // Si en attente de réservation = En attente
                 // Si réservé = Réservé
                 res.json({ result: true, message: "Réservation effectuée" });
               } else {
-                // Sinon on renvoi "Réservation échouée"
+                // Réponse en cas d'échec de la réservation
                 res.json({ result: false, message: "Réservation échouée" });
               }
             });
           }
         });
       } else {
+        // Réponse en cas de déjà réservé
         res.json({ result: false, message: "Déjà réservé" });
       }
     });
 });
 
-router.put("/association/book/cancel/:token/:idPost", (req, res) => {
+// ANNULATION DE LA RESERVATION
+router.put("/charity/book/cancel/:token/:idPost", (req, res) => {
+  // Récupération de l'id de la publication à partir des paramètres de la requête
   const { idPost } = req.params;
-  // On cherche le post via son ID et on remet à null la clef etrangère isBookedby et isBooked à "Non" pour annuler une demande de réservation
+  // Mise à jour de la publication d'offre de société pour annuler la réservation
   PostCompany.updateOne({ idPost }, { isBookedBy: null, isBooked: "Non" }).then(
     () => {
-      // Lorsque c'est fait, on renvoi un message "Annulation de la réservation"
+      // Réponse en cas d'annulation de la réservation
       res.json({ result: true, message: "Annulation de la réservation" });
     }
   );
 });
 
-// Refuse a request booking by the company
+// REFUS DE LA RESERVATION
 router.put("/company/book/refuse/:token/:idPost", (req, res) => {
+  // Récupération de l'id de la publication à partir des paramètres de la requête
   const { idPost } = req.params;
-
+  // Recherche de la publication d'offre de société correspondant à l'id dans la base de données
   PostCompany.findOne({ idPost })
-    .populate("isBookedBy")
+    .populate("isBookedBy") // Remplissage de la référence de réservation pour obtenir les informations de la réservation
     .then((data) => {
       if (data.isBooked === "En attente") {
+        // Si la publication est en attente de réservation
         PostCompany.updateOne(
           { idPost },
           { isBookedBy: null, isBooked: "Non" }
         ).then((data) => {
           if (data) {
+            // Réponse en cas de succès de refus de la réservation
             res.json({ result: true, message: "Réservation refusée" });
           } else {
+            // Réponse en cas d'échec d'annulation de la réservation
             res.json({ result: false, message: "Annulation échouée" });
           }
         });
@@ -282,23 +317,26 @@ router.put("/company/book/refuse/:token/:idPost", (req, res) => {
     });
 });
 
-// Accept a request booking by the company
-
+// ACCEPTATION DE LA RESERVATION
 router.put("/company/book/accept/:token/:idPost", (req, res) => {
+  // Récupération de l'id de la publication à partir des paramètres de la requête
   const { idPost } = req.params;
-
+  // Recherche de la publication d'offre de société correspondant à l'id dans la base de données
   PostCompany.findOne({ idPost })
-    .populate("isBookedBy")
+    .populate("isBookedBy") // Remplissage de la référence de réservation pour obtenir les informations de la réservation
     .then((dataPopulate) => {
       if (dataPopulate.isBooked === "En attente") {
+        // Si la publication est en attente de réservation
         PostCompany.updateOne({ idPost }, { isBooked: "Oui" }).then((data) => {
           if (data) {
+            // Réponse en cas de succès de la confirmation de la réservation
             res.json({
               result: true,
               message: "Réservation confirmée",
               dataPopulate,
             });
           } else {
+            // Réponse en cas d'échec de la confirmation de la réservation
             res.json({ result: false, message: "Confirmation échouée" });
           }
         });
@@ -306,92 +344,109 @@ router.put("/company/book/accept/:token/:idPost", (req, res) => {
     });
 });
 
-// Find article by the idPost for the association
-router.get("/association/details/:token/:idPost", (req, res) => {
+// DETAILS DON
+router.get("/charity/details/:token/:idPost", (req, res) => {
+  // Récupération de l'id de la publication à partir des paramètres de la requête
   const { idPost } = req.params;
+  // Recherche de la publication d'offre de société correspondant à l'id dans la base de données
   PostCompany.findOne({ idPost })
-    .populate("author")
-    .populate("isBookedBy")
+    .populate("author") // Remplissage de la référence d'auteur pour obtenir les informations de l'auteur
     .then((data) => {
       if (data) {
+        // Réponse en cas de succès avec les détails de la publication
         res.json({ result: true, data });
       } else {
-        res.json({ result: false, message: "Post non trouvé" });
+        // Réponse en cas d'absence de la publication
+        res.json({ result: false, message: "Publication non trouvée" });
       }
     });
 });
 
-// Find article by the id for the company
+// DETAILS BESOIN
 router.get("/company/details/:token/:idPost", (req, res) => {
+  // Récupération de l'id de la publication à partir des paramètres de la requête
   const { idPost } = req.params;
+  // Recherche de la publication d'offre d'association caritative correspondant à l'id dans la base de données
   PostAssociation.findOne({ idPost })
-    .populate("author")
-    .populate("isBookedBy")
+    .populate("author") // Remplissage de la référence d'auteur pour obtenir les informations de l'auteur
     .then((data) => {
       if (data) {
+        // Réponse en cas de succès avec les détails de la publication
         res.json({ result: true, data });
       } else {
-        res.json({ result: false, message: "Post non trouvé" });
+        // Réponse en cas d'absence de la publication
+        res.json({ result: false, message: "Publication non trouvée" });
       }
     });
 });
-// Find all articles published by the company connected
+
+// LISTE DONS PUBLIES
 router.get("/company/published/:token", (req, res) => {
+  // Recherche de toutes les publications d'offres de société dans la base de données
   PostCompany.find()
-    .populate("author")
+    .populate("author") // Remplissage de la référence d'auteur pour obtenir les informations de l'auteur
     .then((data) => {
+      // Filtrer les publications pour n'afficher que celles de l'entreprise associée au token
       const result = data.filter(
         (post) => post.author.token === req.params.token
       );
+      // Réponse en cas de succès avec les publications filtrées
       res.json({ result: true, data: result });
     });
 });
-// Find all articles published by the association connected
 
+// LISTE BESOINS PUBLIES
 router.get("/charity/published/:token", (req, res) => {
+  // Recherche de toutes les publications d'offres d'association caritative dans la base de données
   PostAssociation.find()
-    .populate("author")
+    .populate("author") // Remplissage de la référence d'auteur pour obtenir les informations de l'auteur
     .then((data) => {
+      // Filtrer les publications pour n'afficher que celles de l'association caritative associée au token
       const result = data.filter(
         (post) => post.author.token === req.params.token
       );
+      // Réponse en cas de succès avec les publications filtrées
       res.json({ result: true, data: result });
     });
 });
 
-//route pour recupéré les données à utiliser pour les screen annonce
+// DETAILS DON PUBLIE
 router.get("/company/:idPost", async (req, res) => {
   try {
+    // Récupération de l'id de la publication à partir des paramètres de la requête
     const { idPost } = req.params;
-    console.log("idPost", idPost);
+    // Recherche de la publication d'offre de société correspondant à l'id dans la base de données
     const post = await PostCompany.findOne({ idPost })
-      .populate("author")
-      .populate("isBookedBy");
-    console.log(post);
-
-    console.log("route /company");
+      .populate("author") // Remplissage de la référence d'auteur pour obtenir les informations de l'auteur
+      .populate("isBookedBy"); // Remplissage de la référence de réservation pour obtenir les informations de la réservation
+    // Vérification de l'existence de la publication
     if (!post) {
-      return res.status(404).json({ error: "Post not found" });
+      return res.status(404).json({ error: "Publication non trouvée" });
     }
-
+    // Réponse en cas de succès avec les détails de la publication
     res.json({ post });
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
+    // Réponse en cas d'erreur interne du serveur
+    res.status(500).json({ error: "Erreur interne du serveur" });
   }
 });
 
+// DETAILS BESOIN PUBLIE
 router.get("/charity/:idPost", async (req, res) => {
   try {
+    // Récupération de l'id de la publication à partir des paramètres de la requête
     const { idPost } = req.params;
-
+    // Recherche de la publication d'offre d'association caritative correspondant à l'id dans la base de données
     const post = await PostAssociation.findOne({ idPost }).populate("author");
+    // Vérification de l'existence de la publication
     if (!post) {
-      return res.status(404).json({ error: "Post not found" });
+      return res.status(404).json({ error: "Publication non trouvée" });
     }
-
+    // Réponse en cas de succès avec les détails de la publication
     res.json({ post });
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
+    // Réponse en cas d'erreur interne du serveur
+    res.status(500).json({ error: "Erreur interne du serveur" });
   }
 });
 
