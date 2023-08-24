@@ -16,7 +16,19 @@ const postsCompaniesSchema = mongoose.Schema({
     default: null,
   },
   isBooked: String,
+  location: {
+    type: {
+      type: String,
+      enum: ["Point"],
+      required: true,
+    },
+    coordinates: {
+      type: [Number],
+      required: true,
+    },
+  },
 });
+postsCompaniesSchema.index({ location: "2dsphere" });
 
 const PostCompany = mongoose.model("posts_companies", postsCompaniesSchema);
 

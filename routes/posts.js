@@ -59,6 +59,7 @@ router.post("/company/publish/:token", (req, res) => {
   } else {
     // Recherche de l'utilisateur correspondant au token dans la base de données
     User.findOne({ token }).then((data) => {
+      // Si il existe bien dans la BDD, on créer
       if (data) {
         // Création d'une nouvelle publication de société avec les données fournies
         const newPostCompany = new PostCompany({
@@ -132,12 +133,14 @@ router.put("/company/update/:token/:idPost", (req, res) => {
   PostCompany.findOne({ idPost }, {})
     .populate("author") // Remplissage de la référence d'auteur pour obtenir les informations de l'auteur
     .then((data) => {
+      // Si le post est trouvé, on modifie donc les champs modifiés via on ID
       if (data) {
         // Mise à jour de la publication d'offre de société avec les nouvelles données
         PostCompany.updateOne(
           { idPost },
           { title, description, category, photo, quantity, availability_date }
         ).then((data) => {
+          // Si c'est modifié, on renvoit un message "Post updated"
           if (data) {
             // Réponse en cas de succès de la mise à jour
             res.json({ result: true, message: "Publication mise à jour" });
@@ -192,6 +195,7 @@ router.delete("/company/delete/:token/:idPost", (req, res) => {
   PostCompany.findOne({ idPost })
     .populate("author") // Remplissage de la référence d'auteur pour obtenir les informations de l'auteur
     .then((data) => {
+      // Si c'est trouvé, on va delete le post via son ID
       if (data) {
         // Suppression de la publication d'offre de société correspondant à l'id de la base de données
         PostCompany.deleteOne({ idPost }).then((data) => {
@@ -247,6 +251,7 @@ router.put("/charity/book/:token/:idPost", (req, res) => {
       if (data.isBookedBy === null) {
         // Si la publication n'est pas encore réservée
         User.findOne({ token }).then((data) => {
+          // Si le post est trouvé est qu'il n'est reservé par personne, on reherche ensuite les infos de l'utilisateur connecté
           if (data) {
             // Mise à jour de la publication d'offre de société avec les nouvelles données de réservation
             PostCompany.updateOne(
