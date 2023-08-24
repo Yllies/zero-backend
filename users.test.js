@@ -23,7 +23,7 @@ app.use("/", router); // Utilisation du routeur pour les routes commençant par 
 // Suite de tests pour les routes utilisateur
 describe("User Routes", () => {
   // Test : Vérifier si des champs manquent ou sont vides dans la requête
-
+let Dtoken;
   it("should return 400 if missing or empty fields", async () => {
     const response = await request(app).post("/signup").send({
       email: "citadium@citadium.com",
@@ -38,6 +38,7 @@ describe("User Routes", () => {
       longitudeDelta: 6420167.59,
       latitudeDelta: 418780.64,
     });
+
     // Vérifications des réponses attendues
 
     expect(response.status).toBe(400);
@@ -97,6 +98,7 @@ describe("User Routes", () => {
     expect(response.status).toBe(200);
     expect(response.body.result).toBe(true);
     expect(response.body).toHaveProperty("token");
+    Dtoken=response.body.token
   });
 
   it("should sign in an existing user", async () => {
@@ -114,20 +116,20 @@ describe("User Routes", () => {
   });
 
   it("should reset user password", async () => {
-    const token = "YpNZJjxXNy1D-JOaQWn6l66jQ-KQx13R"; // Replace with an actual token
+    const token = "_wH1qTTBPgK_68xopsGjXJF6Kv_D-FSY"; // Replace with an actual token
     const newPassword = "b";
 
     const response = await request(app)
       .put(`/resetPassword/${token}`)
       .send({
-        email: "life@life.com",
-        username: "Léna ",
+        email: "croixrouge@croixrouge.com",
+        username: "Wissem",
         password: newPassword,
       });
 
     expect(response.status).toBe(200);
     expect(response.body.result).toBe(true);
-    expect(response.body.message).toBe("Password successfully updated");
+    expect(response.body.message).toBe("Mot de passe réinitialisé avec succès");
   });
 
   //   it("should delete a user", async () => {
@@ -141,10 +143,18 @@ describe("User Routes", () => {
   //   });
 
   it("should get user by token", async () => {
-    const token = "YpNZJjxXNy1D-JOaQWn6l66jQ-KQx13R";
+    const token = "3X3IPqw39L5S740Ey6TdWudJU05EudqH";
     const response = await request(app).get(`/${token}`);
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty("email");
+  });
+
+  it("should delete a user", async () => {
+    const response = await request(app).delete(`/delete/${Dtoken}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body.result).toBe(true);
+    expect(response.body.message).toBe("Utilisateur supprimé");
   });
 });
