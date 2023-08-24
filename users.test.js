@@ -157,4 +157,8 @@ let Dtoken;
     expect(response.body.result).toBe(true);
     expect(response.body.message).toBe("Utilisateur supprimé");
   });
+  afterAll(async () => {
+    // Fermer la connexion à la base de données après les tests
+    await mongoose.connection.close();
+  });
 });
