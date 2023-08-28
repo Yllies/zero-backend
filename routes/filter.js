@@ -20,21 +20,18 @@ router.get('/company/posts', (req, res) => {
     if (quantity) {
       filter.quantity = quantity;
       
-      if (quantity !== "1") {
-          const rangeArray = quantity.split(",");
-          const minValue = parseInt(rangeArray[0]);
-          const maxValue = parseInt(rangeArray[1]);
+      if (quantity) {
+          const minValue = parseInt(quantity[0]);
+          const maxValue = parseInt(quantity[1]);
   
           if (!isNaN(minValue) && !isNaN(maxValue)) {
               filter.quantity = { $gte: minValue, $lte: maxValue };
           }
-      } else {
-          filter.quantity = 1;
       }
   }
 
     // si la date est pas nulle, sinon ça sorte undefined
-    if (date != 'null') {
+    if (date) {
         // $gte (greater than or equal to) méthode de MongoDB
         filter.availability_date = { $gte: new Date(date)};
     }
